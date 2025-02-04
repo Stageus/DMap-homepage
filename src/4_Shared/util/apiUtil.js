@@ -6,7 +6,10 @@ export const useFetch = () => {
   const [serverState, setServerState] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const navigate = useNavigate();
-  const [cookies, setCookies] = useCookies(["accessToken", "refreshToken"]);
+  const [cookies, setCookies, removeCookies] = useCookies([
+    "accessToken",
+    "refreshToken",
+  ]);
 
   const request = async (
     method,
@@ -33,6 +36,7 @@ export const useFetch = () => {
 
       switch (status) {
         case 401:
+        case 403:
           const response = await fetch(`${BASE_URL}/account/accesstoken`, {
             method: "GET",
             headers: {
@@ -51,17 +55,14 @@ export const useFetch = () => {
                 expires,
               });
               config.headers.Authorization = data.accesstoken;
-              console.log(config);
               break;
             default:
+              removeCookies("accessToken");
+              removeCookies("refreshToken");
               alert("로그인이 필요합니다!");
               navigate("/login");
               break;
           }
-          break;
-        case 403:
-          alert("로그인이 필요합니다!");
-          navigate("/login");
           break;
         case 404:
           console.log("404 Error...");

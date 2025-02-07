@@ -57,8 +57,8 @@ export const useFetch = () => {
               config.headers.Authorization = data.accesstoken;
               break;
             default:
-              removeCookies("accessToken");
-              removeCookies("refreshToken");
+              removeCookies("accessToken", { path: '/' });
+              removeCookies("refreshToken", { path: '/' });
               alert("로그인이 필요합니다!");
               navigate("/login");
               break;

@@ -2,20 +2,20 @@ import React from "react";
 import { useFetch } from "../../4_Shared/util/apiUtil";
 
 const useGetMyInfo = () => {
-  const [serverState, request, loading] = useFetch();
+  const [serverState, request] = useFetch();
   const [userInfo, setUserInfo] = React.useState(null);
 
   React.useEffect(() => {
-    request("GET", `/account/me`, null);
+      request("GET", `/account/me`, null);
   }, []);
 
   React.useEffect(() => {
-    if (!loading && serverState) {
+    if (serverState) {
       setUserInfo(serverState);
     }
-  }, [serverState, loading]);
+  }, [serverState]);
 
-  return [userInfo, loading];
+  return [userInfo];
 };
 
 export default useGetMyInfo;

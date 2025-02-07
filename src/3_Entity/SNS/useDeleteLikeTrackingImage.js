@@ -1,35 +1,28 @@
 import React from "react";
-import { fetchRequest } from "../../4_Shared/util/apiUtil";
-const BASE_URL = process.env.REACT_APP_SERVER_URL;
-const TEST_TOKEN = process.env.REACT_APP_TESTING_ACCESS_TOKEN;
+import { useFetch } from "../../4_Shared/util/apiUtil";
 
 const useDeleteLikeTrackingImage = (trackingImageIdx) => {
-  const deletelikeTrackingImage = async () => {
-    try {
-      const response = await fetchRequest(
-        "DELETE",
-        `${BASE_URL}/sns/like`,
-        { tracking_idx: trackingImageIdx },
-        TEST_TOKEN
-      );
-      const data = await response.json();
-      switch (response.status) {
-        case 200:
-          break;
-        case 400:
-        case 401:
-        case 403:
-        case 404:
-        case 429:
-        case 500:
-        default:
-          console.log(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  const [serverState, request, loading] = useFetch();
+
+  const deleteLikeTrackingImage = () => {
+    request("DELETE", "/sns/like", { tracking_idx: trackingImageIdx });
   };
 
-  return [deletelikeTrackingImage];
+  React.useEffect(() => {
+    if (!loading && serverState) {
+      switch (serverState.status) {
+        case 403:
+          console.log(serverState.message);
+          break;
+        case 429:
+          alert("요청이 너무 많습니다! 잠시 기다려주세요.");
+          break;
+        default:
+          break;
+      }
+    }
+  }, [loading, serverState]);
+
+  return [deleteLikeTrackingImage];
 };
 export default useDeleteLikeTrackingImage;

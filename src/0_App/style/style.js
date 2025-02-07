@@ -2,10 +2,9 @@ import styled from "styled-components";
 
 const STYLE = {
   Main: styled.main`
-    border: 1px red solid;
     width: 100%;
     height: 100%;
-    padding-bottom: 32px;
+    padding-bottom: 48px;
     max-width: 528px;
     margin: 0 auto;
   `,

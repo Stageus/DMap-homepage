@@ -1,73 +1,76 @@
+import { useParams } from "react-router-dom";
 import STYLE from "./style";
 
-import Header from "./ui/Header";
-import TrackTabSlider from "./ui/TrackTabSlider";
-import Loading from "../../2_Widget/Loading";
+import ProfileHeader from "./ui/ProfileHeader";
 
 import useTabs from "./model/useTabs";
 import useSettingMode from "./model/useSettingMode";
-import useManageTrackData from "./model/useManageTrackData";
-import { useParams } from "react-router-dom";
+import useInfinityScroll from "./model/useInfinityScroll.js";
+import useManageTrackData from "./model/useManageTrackData.js";
+
+import useGetProfileTrackingImageList from "../../3_Entity/Tracking/useGetProfileTrackingImageList.js";
+import { useState } from "react";
+import TrackingImageTabContainer from "./ui/TrackingImageTabContainer/index.js";
 
 const Profile = () => {
-  const isLogin = true;
   const { userIdx } = useParams();
-  const { activeTab, tabIndex, handleTabClick } = useTabs();
-  const { modifyMode, handleSetMode, handleCloseMode } = useSettingMode(); // 수정 , 삭제 상태 관리
 
-  const {
-    trackData,
-    trackLoading,
-    trackError,
-    handleToggleTrackType,
-    handleSelectCancel,
-    handleModifyTrack,
-    handleDeleteTrack,
-    handleDeleteAdd,
-    getTrackLength,
-  } = useManageTrackData(userIdx); // API로 호출된 데이터 관리 훅
+  const [tabState, handleTabClick] = useTabs(); // 탭 관리 훅
+  const [modifyMode, handleSetMode, handleCloseMode] = useSettingMode(); // 수정 , 삭제 상태 관리
+  const [publicTabPage, publicObserveRef] = useInfinityScroll();
+  const [privateTabPage, privateObserveRef] = useInfinityScroll();
 
-  // 로딩 애러 처리
-  if (trackLoading) return <Loading />;
-  if (trackError) return <Loading />;
+  // 데이터 조회 (userIdx , [page] , tabIndex)
+  const [trackingImageData, loading, hasMoreContent] =
+    useGetProfileTrackingImageList(
+      userIdx,
+      tabState.tabIndex === 0 ? publicTabPage : privateTabPage,
+      tabState.tabIndex
+    );
+
+  // 수정상태 데이터 관리 state
+  const [modifyIdxList, setModifyIdxList] = useState([]);
+  const [
+    displayTrackingImage,
+    setDisplayTrackingImage,
+    backupTrackingImageData,
+  ] = useManageTrackData(trackingImageData, modifyMode);
 
   return (
     <>
       <STYLE.Main>
-        <Header
-          setMode={{ modifyMode, handleSetMode, handleCloseMode }}
-          trackData={trackData}
-          getTrackLength={getTrackLength}
-          activeTab={activeTab}
-          handler={{ handleSelectCancel, handleDeleteTrack, handleModifyTrack }}
-          user={{ userIdx }}
-        />
-        <STYLE.TabMenu>
-          {isLogin ? (
-            <>
-              <STYLE.Tab
-                active={activeTab === "공유"}
-                onClick={() => handleTabClick("공유")}>
-                공유
-              </STYLE.Tab>
-              <STYLE.Tab
-                active={activeTab === "저장"}
-                onClick={() => handleTabClick("저장")}>
-                저장
-              </STYLE.Tab>
-            </>
-          ) : (
-            <STYLE.TabNone>게시물</STYLE.TabNone>
-          )}
-        </STYLE.TabMenu>
-        <TrackTabSlider
+        <ProfileHeader
+          handleSetMode={handleSetMode}
+          activeTabStr={tabState?.activeTabStr}
+          handleTabClick={handleTabClick}
           modifyMode={modifyMode}
-          handle={{ handleToggleTrackType, handleDeleteAdd }}
-          trackData={trackData}
-          getTrackLength={getTrackLength}
-          tabIndex={tabIndex}
+          handleCloseMode={handleCloseMode}
+          modifyIdxList={modifyIdxList}
+          setDisplayTrackingImage={setDisplayTrackingImage}
+          setModifyIdxList={setModifyIdxList}
+          backupTrackingImageData={backupTrackingImageData}
         />
       </STYLE.Main>
+
+      <TrackingImageTabContainer
+        modifyMode={modifyMode}
+        hasMoreContent={hasMoreContent}
+        tabIndex={tabState.tabIndex}
+        handleTabClick={handleTabClick}
+        displayTrackingImage={displayTrackingImage}
+        setDisplayTrackingImage={setDisplayTrackingImage}
+        privateObserveRef={privateObserveRef}
+        publicObserveRef={publicObserveRef}
+        setModifyIdxList={setModifyIdxList}
+      />
+
+      {loading && (
+        <STYLE.LoadingContainer>
+          <STYLE.LoadingBox>
+            <STYLE.Loading />
+          </STYLE.LoadingBox>
+        </STYLE.LoadingContainer>
+      )}
     </>
   );
 };

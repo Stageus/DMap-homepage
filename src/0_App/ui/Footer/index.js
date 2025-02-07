@@ -1,39 +1,79 @@
 import STYLE from "./style";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import house_icon from "./assets/house-solid.svg";
+import home_icon from "./assets/home.svg";
 import search_icon from "./assets/magnifying-glass-solid.svg";
-import map_icon from "./assets/map-solid.svg";
-import profile_icon from "./assets/user-solid.svg";
-import setting_icon from "./assets/gear-solid.svg";
+import map_icon from "./assets/map.svg";
+import profile_icon from "./assets/user.svg";
+import setting_icon from "./assets/setting.svg";
+import PAGE from "./constant/page";
+import useAuthenticator from "../../../4_Shared/lib/useAuthenticator";
+import { useCookies } from "react-cookie";
 
 const Footer = () => {
   const navigate = useNavigate();
+  const [page, setPage] = React.useState(
+    window.location.pathname.split("/")[1] || PAGE.HOME
+  );
+  const [isLogin] = useAuthenticator();
+  const [cookies, setCookies] = useCookies(["userIdx"]);
   return (
     <STYLE.Container>
-      <STYLE.Tab>
-        <img src={house_icon} alt="home"  onClick={() => {
+      <STYLE.Tab
+        $isCurrentPage={page === PAGE.HOME}
+        onClick={() => {
+          setPage(PAGE.HOME);
           navigate("/");
-        }}/>
+        }}
+      >
+        <img src={home_icon} alt="home" />
+        <STYLE.TabInfoTitle>HOME</STYLE.TabInfoTitle>
       </STYLE.Tab>
-      <STYLE.Tab>
-        <img src={search_icon} alt="search" onClick={() => {
-          navigate("/search/:category?text=");
-        }}/>
+      <STYLE.Tab
+        $isCurrentPage={page === PAGE.SEARCH}
+        onClick={() => {
+          setPage(PAGE.SEARCH);
+          navigate("/search");
+        }}
+      >
+        <img src={search_icon} alt="search" />
+        <STYLE.TabInfoTitle>SEARCH</STYLE.TabInfoTitle>
       </STYLE.Tab>
-      <STYLE.Tab>
-        <img src={map_icon} alt="map" onClick={() => {
+      <STYLE.Tab
+        $isCurrentPage={page === PAGE.TRACKING}
+        onClick={() => {
+          setPage(PAGE.TRACKING);
           navigate("/tracking");
-        }}/>
+        }}
+      >
+        <img src={map_icon} alt="map" />
+        <STYLE.TabInfoTitle>TRACKING</STYLE.TabInfoTitle>
       </STYLE.Tab>
-      <STYLE.Tab>
-        <img src={profile_icon} alt="profile" onClick={() => {
-          navigate("/profile/:userIdx");
-        }}/>
+      <STYLE.Tab
+        $isCurrentPage={page === PAGE.PROFILE}
+        onClick={() => {
+          if (isLogin) {
+            setPage(PAGE.PROFILE);
+            navigate(`/profile/${cookies["userIdx"]}`);
+          } else {
+            setPage(PAGE.LOGIN);
+            alert("로그인이 필요합니다!");
+            navigate("/login");
+          }
+        }}
+      >
+        <img src={profile_icon} alt="profile" />
+        <STYLE.TabInfoTitle>PROFILE</STYLE.TabInfoTitle>
       </STYLE.Tab>
-      <STYLE.Tab>
-        <img src={setting_icon} alt="setting" onClick={() => {
+      <STYLE.Tab
+        $isCurrentPage={page === PAGE.SETTING}
+        onClick={() => {
+          setPage(PAGE.SETTING);
           navigate("/setting");
-        }}/>
+        }}
+      >
+        <img src={setting_icon} alt="setting" />
+        <STYLE.TabInfoTitle>SETTING</STYLE.TabInfoTitle>
       </STYLE.Tab>
     </STYLE.Container>
   );

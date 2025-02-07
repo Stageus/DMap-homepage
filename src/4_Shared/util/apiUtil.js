@@ -1,18 +1,87 @@
-export const fetchRequest = async (method, url, body = null, token = null) => {
-  const config = {
-    method: method,
-    headers: {
-      "Content-Type": "application/json",
-    },
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+const BASE_URL = process.env.REACT_APP_SERVER_URL;
+export const useFetch = () => {
+  const [serverState, setServerState] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const navigate = useNavigate();
+  const [cookies, setCookies, removeCookies] = useCookies([
+    "accessToken",
+    "refreshToken",
+  ]);
+
+  const request = async (
+    method,
+    endPoint,
+    body = null,
+    contentType = "application/json"
+  ) => {
+    try {
+      let config = {
+        method,
+        headers: {
+          Authorization: cookies["accessToken"],
+        },
+      };
+      if (contentType !== null) {
+        config.headers["Content-Type"] = contentType;
+      }
+      if (body !== null) {
+        contentType === "application/json"
+          ? (config.body = JSON.stringify(body))
+          : (config.body = body);
+      }
+      const response = await fetch(`${BASE_URL}${endPoint}`, config);
+      const data = await response.json();
+      const status = response.status;
+      setServerState({ ...data, status });
+
+      switch (status) {
+        case 401:
+        case 403:
+          const response = await fetch(`${BASE_URL}/account/accesstoken`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: cookies["refreshToken"],
+            },
+          });
+          const data = await response.json();
+          const status = response.status;
+          switch (status) {
+            case 200:
+              const expires = new Date();
+              expires.setMinutes(expires.getMinutes() + 30);
+              setCookies("accessToken", data.accesstoken, {
+                path: "/",
+                expires,
+              });
+              config.headers.Authorization = data.accesstoken;
+              break;
+            default:
+              removeCookies("accessToken", { path: "/" });
+              removeCookies("refreshToken", { path: "/" });
+              alert("로그인이 필요합니다!");
+              navigate("/login");
+              break;
+          }
+          break;
+        case 404:
+          console.log("404 Error...");
+          break;
+        case 500:
+          console.log("Server Error: ", data.message);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
-  if (token !== null) {
-    config.headers.Authorization = `${token}`;
-  }
-  if (body !== null) {
-    config.body = JSON.stringify(body);
-  }
 
-  const response = await fetch(url, config);
-
-  return response;
+  return [serverState, request, loading];
 };

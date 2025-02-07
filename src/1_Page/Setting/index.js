@@ -1,46 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import STYLE from "./style";
-
-import ConfirmModal from "../../2_Widget/ConfirmModal";
-import useConfirmModal from "../../4_Shared/model/useModalHandler";
-
-import useTab from "./model/useTab";
-import useActionModalMessageSet from "./model/useActionModalMessageSet";
-import useManageUser from "./model/useManageUser";
-import useChangeTheme from "./model/useChangeTheme";
-
 import ACTION_MESSAGES from "./constant/actionMessagesType";
 import TABS from "./constant/tabs";
 
-const UserProfile = () => {
-  const { selectedAction, handleMessageSetDelete, handleMessageSetLogout } =
-    useActionModalMessageSet();
+import useThemeTab from "./model/useThemeTab";
+import useLogout from "./model/useLogout";
 
-  const [confirmModal, handleConfirmModalOpen, handleConfirmModalClose] =
-    useConfirmModal();
+import ConfirmTwoBtnModal from "../../2_Widget/ConfirmModal";
+import useDeleteAccountUser from "../../3_Entity/Account/useDeleteAccountUser";
+import useAuthenticator from "../../4_Shared/lib/useAuthenticator";
+import useModalHandler from "../../4_Shared/model/useModalHandler";
 
-  const { activeTab, handleTabWhite, handleTabDark, isPresentTab } = useTab();
-
-  const {
-    userData,
-    handleLogin,
-    handleDeleteAccount,
-    handleBack,
-    handleLogout,
-  } = useManageUser(handleConfirmModalClose);
-
-  const { theme } = useChangeTheme(activeTab);
+const Setting = () => {
+  const navigate = useNavigate();
+  const [confirmTwoBtnModal, confimTwoBtnToggle] = useModalHandler();
+  const [modalMessage, setModalMessage] = useState(null);
+  //const [handleTabWhite, handleTabDark, isPresentTab] = useThemeTab();
+  const [deleteAccountUser] = useDeleteAccountUser();
+  const [logout] = useLogout();
+  const [isLogin] = useAuthenticator();
 
   return (
     <>
       <STYLE.Container>
         <STYLE.Header>
           <STYLE.HeaderTitle>
-            {userData ? userData.nickname : "로그인이 필요합니다"}
+            {isLogin ? "설정 페이지" : "로그인이 필요합니다"}
           </STYLE.HeaderTitle>
         </STYLE.Header>
         <STYLE.TabContainer>
-          <STYLE.TabBox>
+          {/* <STYLE.TabBox>
             <STYLE.Tab
               $active={isPresentTab(TABS.WHITE)}
               onClick={handleTabWhite}>
@@ -52,24 +42,24 @@ const UserProfile = () => {
               다크
             </STYLE.Tab>
             <STYLE.TabBackground $activeTabName={isPresentTab(TABS.WHITE)} />
-          </STYLE.TabBox>
+          </STYLE.TabBox> */}
         </STYLE.TabContainer>
         <STYLE.ButtonContainer>
           <STYLE.ButtonBox>
-            {userData ? (
+            {isLogin ? (
               <>
                 <STYLE.Button
                   danger
                   onClick={() => {
-                    handleMessageSetDelete();
-                    handleConfirmModalOpen();
+                    setModalMessage(ACTION_MESSAGES.delete);
+                    confimTwoBtnToggle();
                   }}>
                   회원탈퇴
                 </STYLE.Button>
                 <STYLE.Button
                   onClick={() => {
-                    handleMessageSetLogout();
-                    handleConfirmModalOpen();
+                    setModalMessage(ACTION_MESSAGES.logout);
+                    confimTwoBtnToggle();
                   }}>
                   로그아웃
                 </STYLE.Button>
@@ -77,7 +67,7 @@ const UserProfile = () => {
             ) : (
               <STYLE.Button
                 onClick={() => {
-                  handleLogin();
+                  navigate("/login");
                 }}>
                 로그인 하기
               </STYLE.Button>
@@ -95,23 +85,21 @@ const UserProfile = () => {
                 All rights reserved.
               </p>
             </STYLE.Footer>
-            <STYLE.BackButton onClick={handleBack}>뒤로가기</STYLE.BackButton>
           </STYLE.ButtonBox>
         </STYLE.ButtonContainer>
       </STYLE.Container>
-      {confirmModal && (
-        <ConfirmModal
-          message={`정말로 ${selectedAction} 하시겠습니까?`}
+
+      {confirmTwoBtnModal && (
+        <ConfirmTwoBtnModal
+          message={`정말로 ${modalMessage} 하시겠습니까?`}
           onConfirm={
-            selectedAction === ACTION_MESSAGES.delete
-              ? handleDeleteAccount
-              : handleLogout
+            modalMessage === ACTION_MESSAGES.delete ? deleteAccountUser : logout
           }
-          onCancel={handleConfirmModalClose}
+          onCancel={confimTwoBtnToggle}
         />
       )}
     </>
   );
 };
 
-export default UserProfile;
+export default Setting;

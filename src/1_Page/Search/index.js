@@ -1,41 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import STYLE from "./style";
-import SearchInput from "./ui/SearchInput";
+import SearchHeader from "./ui/SearchHeader";
 import SearchResult from "./ui/SearchResult";
-import useNavigateHandler from "./model/useNavigateHandler";
-import useSearchHistory from "./model/useSearchHistory";
+import { useSearchParams } from "react-router-dom";
 
 const Search = () => {
-  const { searchInputText, handleListClick } = useNavigateHandler();
-  const { listItems, addSearchHistory, clearSearchHistory } =
-    useSearchHistory();
+  const [searchParams] = useSearchParams();
+  const searchInputText = searchParams.get("text"); // 쿼리 값 가져오기
+  const [isFirstSearch, setIsFisrtSearch] = useState(true);
+  const [isSearchFocus, setIsSearchFocus] = useState(false);
 
   return (
     <>
-      <SearchInput
-        addSearchHistory={addSearchHistory}
-        searchInputText={searchInputText}
-      />
-      {searchInputText ? (
-        <SearchResult searchInputText={searchInputText} />
-      ) : (
-        <STYLE.Container>
-          <STYLE.List>
-            {listItems.length > 0 ? (
-              listItems.map((item) => (
-                <STYLE.ListItem
-                  onClick={() => {
-                    handleListClick(item.searchInputText);
-                  }}>
-                  {item.searchInputText}
-                </STYLE.ListItem>
-              ))
-            ) : (
-              <STYLE.ListItem>검색 결과가 없습니다</STYLE.ListItem>
-            )}
-          </STYLE.List>
-        </STYLE.Container>
+      {!isFirstSearch && (
+        <STYLE.BodyContainer
+          onClick={() => {
+            setIsSearchFocus(false);
+          }}>
+          {<SearchResult searchInputText={searchInputText} />}
+        </STYLE.BodyContainer>
       )}
+      <SearchHeader
+        searchInputText={searchInputText}
+        isSearchFocus={isSearchFocus}
+        isFirstSearch={isFirstSearch}
+        setIsSearchFocus={setIsSearchFocus}
+        setIsFisrtSearch={setIsFisrtSearch}
+      />
     </>
   );
 };

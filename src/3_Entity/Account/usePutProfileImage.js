@@ -1,43 +1,13 @@
 import React from "react";
-
-const BASE_URL = process.env.REACT_APP_SERVER_URL;
-const TEST_TOKEN = process.env.REACT_APP_TESTING_ACCESS_TOKEN;
-
-export const useFormDataFetch = () => {
-  const [serverState, setServerState] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-
-  const request = async (method, endPoint, body = null) => {
-    try {
-      const config = {
-        method: method,
-        headers: {
-          Authorization: TEST_TOKEN,
-        },
-        body: body,
-      };
-      console.log("EX2");
-      const response = await fetch(`${BASE_URL}${endPoint}`, config);
-      console.log("EX");
-      const data = await response.json();
-      setServerState({ ...data, status: response.status });
-    } catch (error) {
-      console.log("FormData 요청 오류:", error);
-    } finally {
-      console.log("실행");
-      setLoading(false);
-    }
-  };
-  return [serverState, request, loading];
-};
+import { useFetch } from "../../4_Shared/util/apiUtil";
 
 const usePutProfileImage = ({ onSuccess, onError }) => {
-  const [serverState, request] = useFormDataFetch();
+  const [serverState, request] = useFetch();
 
   const putProfileImage = (imageFile) => {
     const formData = new FormData();
     formData.append("image", imageFile);
-    request("PUT", "/account/image", formData);
+    request("PUT", "/account/image", formData, null);
   };
 
   React.useEffect(() => {

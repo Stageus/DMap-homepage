@@ -16,7 +16,7 @@ const Setting = () => {
   const navigate = useNavigate();
   const [confirmTwoBtnModal, confimTwoBtnToggle] = useModalHandler();
   const [modalMessage, setModalMessage] = useState(null);
-  const [handleTabWhite, handleTabDark, isPresentTab] = useThemeTab();
+  //const [handleTabWhite, handleTabDark, isPresentTab] = useThemeTab();
   const [deleteAccountUser] = useDeleteAccountUser();
   const [logout] = useLogout();
   const [isLogin] = useAuthenticator();
@@ -30,7 +30,7 @@ const Setting = () => {
           </STYLE.HeaderTitle>
         </STYLE.Header>
         <STYLE.TabContainer>
-          <STYLE.TabBox>
+          {/* <STYLE.TabBox>
             <STYLE.Tab
               $active={isPresentTab(TABS.WHITE)}
               onClick={handleTabWhite}>
@@ -42,7 +42,7 @@ const Setting = () => {
               다크
             </STYLE.Tab>
             <STYLE.TabBackground $activeTabName={isPresentTab(TABS.WHITE)} />
-          </STYLE.TabBox>
+          </STYLE.TabBox> */}
         </STYLE.TabContainer>
         <STYLE.ButtonContainer>
           <STYLE.ButtonBox>

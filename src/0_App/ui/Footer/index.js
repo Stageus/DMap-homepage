@@ -8,6 +8,7 @@ import profile_icon from "./assets/user.svg";
 import setting_icon from "./assets/setting.svg";
 import PAGE from "./constant/page";
 import useAuthenticator from "../../../4_Shared/lib/useAuthenticator";
+import { useCookies } from "react-cookie";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Footer = () => {
     window.location.pathname.split("/")[1] || PAGE.HOME
   );
   const [isLogin] = useAuthenticator();
+  const [cookies, setCookies] = useCookies(["userIdx"]);
   return (
     <STYLE.Container>
       <STYLE.Tab
@@ -52,7 +54,7 @@ const Footer = () => {
         onClick={() => {
           if (isLogin) {
             setPage(PAGE.PROFILE);
-            navigate("/profile/me");
+            navigate(`/profile/${cookies["userIdx"]}`);
           } else {
             setPage(PAGE.LOGIN);
             alert("로그인이 필요합니다!");

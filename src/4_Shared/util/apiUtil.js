@@ -21,13 +21,16 @@ export const useFetch = () => {
       let config = {
         method,
         headers: {
-          "Content-Type": contentType,
           Authorization: cookies["accessToken"],
         },
       };
-
+      if (contentType !== null) {
+        config.headers["Content-Type"] = contentType;
+      }
       if (body !== null) {
-        config.body = JSON.stringify(body);
+        contentType === "application/json"
+          ? (config.body = JSON.stringify(body))
+          : (config.body = body);
       }
       const response = await fetch(`${BASE_URL}${endPoint}`, config);
       const data = await response.json();
@@ -57,8 +60,8 @@ export const useFetch = () => {
               config.headers.Authorization = data.accesstoken;
               break;
             default:
-              removeCookies("accessToken", { path: '/' });
-              removeCookies("refreshToken", { path: '/' });
+              removeCookies("accessToken", { path: "/" });
+              removeCookies("refreshToken", { path: "/" });
               alert("로그인이 필요합니다!");
               navigate("/login");
               break;
